@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gas Level History</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Gas Level History</h1>
+    <canvas id="gasLevelChart" width="400" height="200"></canvas>
+
+    <script>
+        async function fetchHistoryData() {
+            const response = await fetch('/history');
+            const data = await response.json();
+            
+            // Prepare the data for the chart
+            const labels = data.map(entry => entry.timestamp);
+            const gasLevels = data.map(entry => entry.gas_level);
+
+            const ctx = document.getElementById('gasLevelChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Gas Level',
+                        data: gasLevels,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { title: { display: true, text: 'Timestamp' } },
+                        y: { title: { display: true, text: 'Gas Level' } }
+                    }
+                }
+            });
+        }
+
+        // Fetch and display historical data when the page loads
+        window.onload = fetchHistoryData;
+    </script>
+</body>
+</html>

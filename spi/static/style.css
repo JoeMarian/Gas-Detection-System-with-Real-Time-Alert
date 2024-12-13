@@ -1,0 +1,125 @@
+/* General body and background styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0; /* Off-white background */
+    color: #333;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+/* Header styles */
+h1 {
+    color: #333;
+    font-size: 2.5em;
+    margin-top: 30px;
+    font-weight: bold;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Room section styling */
+.room-section {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Hover effect for room section */
+.room-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Gas level intensity indicator */
+.intensity-indicator {
+    width: 220px;
+    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 8px;
+    color: white;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    transition: background-color 0.3s ease-in-out;
+}
+
+/* Color for different intensity levels */
+.low {
+    background-color: #78e08f; /* Light green for low */
+}
+
+.moderate {
+    background-color: #f39c12; /* Yellow-orange for moderate */
+}
+
+.high {
+    background-color: #e74c3c; /* Red for high intensity */
+}
+
+.anomaly {
+    background-color: #9b59b6; /* Purple for anomaly */
+}
+
+/* Z-Score and Anomaly styling */
+#room1-zscore, #room2-zscore, #room3-zscore,
+#room1-anomaly, #room2-anomaly, #room3-anomaly {
+    font-size: 1.2em;
+    margin-top: 5px;
+    color: #555;
+}
+
+/* Popup effect for anomalies */
+.popup {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 1.3em;
+    z-index: 9999;
+    display: none;
+    animation: fadeIn 1s ease-out;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Simple button-like link for triggering alerts */
+.alert-link {
+    color: #fff;
+    background-color: #ff4757;
+    padding: 10px 20px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.alert-link:hover {
+    background-color: #e84118;
+}
+
+/* Transition effect for hover elements */
+.room-section:hover .alert-link {
+    background-color: #ff6348;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .intensity-indicator {
+        width: 90%;
+    }
+
+    .room-section {
+        margin: 10px;
+    }
+}

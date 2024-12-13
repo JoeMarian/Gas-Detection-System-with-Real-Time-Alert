@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gas Detection Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .floor-plan {
+            display: flex;
+            justify-content: space-evenly;
+            margin-top: 30px;
+        }
+
+        .room {
+            width: 150px;
+            height: 150px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+            font-weight: bold;
+            color: white;
+        }
+        .safe {
+            background-color: green;
+        }
+
+        .danger {
+            background-color: red;
+        }
+
+        .room-status {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            font-weight: normal;
+        }
+        .intensity-indicator {
+            width: 200px;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 8px;
+            color: white;
+            margin-top: 10px;
+        }
+        .low { background-color: green; }
+        .moderate { background-color: orange; }
+        .high { background-color: red; }
+        .anomaly { background-color: purple; }
+    </style>
+</head>
+<body>
+    <h1>Gas Detection Dashboard</h1>
+
+    <div class="floor-plan">
+
+        <div id="room1" class="room safe">
+            <h3>Room 1</h3>
+            <div class="room-status" id="room1-status">Safe</div>
+        </div>
+
+        <div id="room2" class="room safe">
+            <h3>Room 2</h3>
+            <div class="room-status" id="room2-status">Safe</div>
+        </div>
+
+        <div id="room3" class="room safe">
+            <h3>Room 3</h3>
+            <div class="room-status" id="room3-status">Safe</div>
+        </div>
+    </div>
+
+    <div class="room-section">
+        <h2>Room 1</h2>
+        <div id="room1-gas-level">Waiting for Room 1 data...</div>
+        <div id="room1-intensity" class="intensity-indicator low">Low Intensity</div>
+        <div id="room1-zscore">Z-Score: Waiting...</div>
+        <div id="room1-anomaly">No Anomaly</div>
+    </div>
+
+    <div class="room-section">
+        <h2>Room 2</h2>
+        <div id="room2-gas-level">Waiting for Room 2 data...</div>
+        <div id="room2-intensity" class="intensity-indicator low">Low Intensity</div>
+        <div id="room2-zscore">Z-Score: Waiting...</div>
+        <div id="room2-anomaly">No Anomaly</div>
+    </div>
+
+    <div class="room-section">
+        <h2>Room 3</h2>
+        <div id="room3-gas-level">Waiting for Room 3 data...</div>
+        <div id="room3-intensity" class="intensity-indicator low">Low Intensity</div>
+        <div id="room3-zscore">Z-Score: Waiting...</div>
+        <div id="room3-anomaly">No Anomaly</div>
+    </div>
+
+    <h2>Gas Detection Dashboard</h2>
+
+    <div style="text-align: center; margin-bottom: 20px;">
+        <button onclick="window.location.href='history.html'" style="padding: 10px 20px; font-size: 16px;">View Historical Data Chart</button>
+    </div>
+
+    <script>
+        const historicalGasLevels = [320, 325, 318, 330, 327, 323, 322, 328, 319, 331]; // Historical gas levels
+        const meanGasLevel = historicalGasLevels.reduce((sum, value) => sum + value, 0) / historicalGasLevels.length;
+        const stdGasLevel = Math.sqrt(historicalGasLevels.reduce((sum, value) => sum + Math.pow(value - meanGasLevel, 2), 0) / historicalGasLevels.length);
+
+        function fetchRoom1Data() {
+            fetch('/latest_gas_level')
+                .then(response => response.json())
+                .then(data => {
+                    const gasLevel = data.gasLevel;
+                    document.getElementById('room1-gas-level').innerText = "Gas Level: " + gasLevel;
+                    updateIntensityIndicator('room1-intensity', gasLevel);
+                    const zScore = calculateZScore(gasLevel);
+                    document.getElementById('room1-zscore').innerText = "Z-Score: " + zScore.toFixed(2);
+                    checkAnomaly('room1-anomaly', zScore);
+                    updateRoomStatus('room1', gasLevel);
+                    checkSmokeAlert(gasLevel);
+                })
+                .catch(error => console.error('Error fetching data for Room 1:', error));
+        }
+
+        function fetchRoom2And3Data() {
+            const room2GasLevel = Math.floor(Math.random() * 300); // Random value < 300
+            const room3GasLevel = Math.floor(Math.random() * 300); // Random value < 300
+
+            document.getElementById('room2-gas-level').innerText = "Gas Level: " + room2GasLevel;
+            document.getElementById('room3-gas-level').innerText = "Gas Level: " + room3GasLevel;
+
+            updateIntensityIndicator('room2-intensity', room2GasLevel);
+            updateIntensityIndicator('room3-intensity', room3GasLevel);
+
+            const room2ZScore = calculateZScore(room2GasLevel);
+            const room3ZScore = calculateZScore(room3GasLevel);
+
+            document.getElementById('room2-zscore').innerText = "Z-Score: " + room2ZScore.toFixed(2);
+            document.getElementById('room3-zscore').innerText = "Z-Score: " + room3ZScore.toFixed(2);
+
+            checkAnomaly('room2-anomaly', room2ZScore);
+            checkAnomaly('room3-anomaly', room3ZScore);
+            updateRoomStatus('room2', room2GasLevel);
+            updateRoomStatus('room3', room3GasLevel);
+            checkSmokeAlert(room2GasLevel); // Check for smoke and trigger voice message
+            checkSmokeAlert(room3GasLevel); // Check for smoke and trigger voice message
+        }
+
+        function updateIntensityIndicator(elementId, gasLevel) {
+            const indicator = document.getElementById(elementId);
+            if (gasLevel > 320) {
+                indicator.innerText = "High Intensity - Smoke Detected!";
+                indicator.className = "intensity-indicator high";
+            } else if (gasLevel > 200) {
+                indicator.innerText = "Moderate Intensity";
+                indicator.className = "intensity-indicator moderate";
+            } else {
+                indicator.innerText = "Low Intensity";
+                indicator.className = "intensity-indicator low";
+            }
+        }
+
+        function calculateZScore(gasLevel) {
+            return (gasLevel - meanGasLevel) / stdGasLevel;
+        }
+
+        function checkAnomaly(elementId, zScore) {
+            const anomalyElement = document.getElementById(elementId);
+            if (Math.abs(zScore) > 3) {
+                anomalyElement.innerText = "Anomaly Detected!";
+                anomalyElement.className = "anomaly";
+            } else {
+                anomalyElement.innerText = "No Anomaly";
+                anomalyElement.className = "";
+            }
+        }
+
+        function updateRoomStatus(roomId, gasLevel) {
+            const roomElement = document.getElementById(roomId);
+            const statusElement = document.getElementById(roomId + '-status');
+
+            if (gasLevel > 320) {
+                roomElement.className = 'room danger';
+                statusElement.innerText = 'Danger';
+            } else {
+                roomElement.className = 'room safe';
+                statusElement.innerText = 'Safe';
+            }
+        }
+
+        // Function to trigger voice alert when smoke is detected (gas level > 320)
+        function checkSmokeAlert(gasLevel) {
+            if (gasLevel > 320) {
+                const message = "Smoke detected! Please evacuate immediately!";
+                alert(message);  // Optional: display a browser alert
+                speakMessage(message); // Speak the message
+            }
+        }
+
+        // Function to speak the message using the Web Speech API
+        function speakMessage(message) {
+            const speech = new SpeechSynthesisUtterance(message);
+            speech.lang = "en-US";
+            speech.volume = 1;
+            speech.rate = 1;
+            speech.pitch = 1;
+            window.speechSynthesis.speak(speech);
+        }
+
+        setInterval(fetchRoom1Data, 3000);
+        setInterval(fetchRoom2And3Data, 3000);
+
+    </script>
+</body>
+</html>

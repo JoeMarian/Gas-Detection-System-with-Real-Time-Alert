@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historical Gas Data</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Historical Smoke Detection Levels</h1>
+
+    <!-- Chart Container -->
+    <div style="width: 80%; margin: 0 auto;">
+        <canvas id="gasDataChart"></canvas>
+    </div>
+
+    <script>
+        // Fetch historical data and render the chart
+        async function fetchAndRenderChart() {
+            const response = await fetch('/get_historical_data');
+            const data = await response.json();
+
+            // Assuming data is structured as arrays of labels, levels, and intensities
+            const labels = data.timestamps; // E.g., ['2024-11-09 10:00', '2024-11-09 11:00', ...]
+            const gasLevels = data.gasLevels; // E.g., [320, 330, 310, ...]
+            const intensities = data.intensities; // E.g., [1, 2, 1, ...]
+
+            const ctx = document.getElementById('gasDataChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Gas Level',
+                        data: gasLevels,
+                        borderColor: 'red',
+                        fill: false
+                    }, {
+                        label: 'Intensity',
+                        data: intensities,
+                        borderColor: 'blue',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Smoke Detection Historical Data'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        fetchAndRenderChart();
+    </script>
+</body>
+</html>
